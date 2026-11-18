@@ -18,6 +18,11 @@ async function getPopularManga(req, res, next) {
     const type = req.query.type === 'rating' ? 'rating' : 'followed';
     const translatedLanguage = req.query.lang ? String(req.query.lang).trim() : '';
 
+    // Tự động lấy địa chỉ máy chủ hiện tại (hỗ trợ cả http local và https khi deploy lên Vercel/Render)
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const baseServerUrl = `${protocol}://${host}`;
+
     const cacheKey = `popular_${type}_limit${limit}_offset${offset}_lang${translatedLanguage || 'all'}`;
 
     // 1. Kiểm tra Cache trong Firebase Firestore (nếu đã kích hoạt Firebase)
@@ -48,6 +53,7 @@ async function getPopularManga(req, res, next) {
       offset,
       type,
       translatedLanguage,
+      baseServerUrl,
     });
 
     // 3. Lưu kết quả vào Firebase Firestore Cache (nếu đã kích hoạt Firebase)
@@ -78,6 +84,27 @@ async function getPopularManga(req, res, next) {
   }
 }
 
+/**
+ * Controller: Proxy tải ảnh bìa từ MangaDex giúp trình duyệt của học sinh không bao giờ bị chặn Hotlink (403 Forbidden)
+ * Endpoint: GET /api/manga/cover/:mangaId/:fileName
+ */
+async function getCoverImage(req, res, next) {
+  try {
+    const { mangaId, fileName } = req.params;
+    const { buffer, contentType } = await mangadexService.fetchCoverImage(mangaId, fileName);
+
+    // Cho phép trình duyệt và CDN (Vercel/Cloudflare) cache ảnh trong 7 ngày để tải siêu nhanh
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getPopularManga,
+  getCoverImage,
 };
