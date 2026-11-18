@@ -79,3 +79,26 @@ Hệ thống được thiết kế để **tự động chạy được ngay c�
 - **Ví dụ gọi API:**
   - Lấy 10 truyện phổ biến nhất: `GET http://localhost:5000/api/manga/popular?limit=10`
   - Lấy 10 truyện điểm cao nhất có bản dịch tiếng Việt: `GET http://localhost:5000/api/manga/popular?limit=10&type=rating&lang=vi`
+
+### 3.3. Lấy thông tin chi tiết một bộ truyện (Manga Details)
+- **URL:** `GET /api/manga/:id`
+- **Ví dụ:** `GET http://localhost:5000/api/manga/32d76d19-8a05-4db0-9fc2-e0b0648fe9d0`
+- **Dữ liệu trả về:** Thông tin đầy đủ của truyện (`title`, `description`, `tags`, `authors`, `artists`, `status`, `year`, `availableTranslatedLanguages`, `coverUrl` qua Proxy) kèm theo thống kê `statistics` (`rating.average`, `rating.bayesian`, `follows`).
+
+### 3.4. Lấy danh sách các chương của một bộ truyện (Manga Chapters)
+- **URL:** `GET /api/manga/:id/chapters`
+- **Query Parameters:**
+  | Tham số | Kiểu | Mặc định | Mô tả |
+  | :--- | :--- | :--- | :--- |
+  | `limit` | `number` | `100` | Số lượng chương trả về (tối đa `500`) |
+  | `offset` | `number` | `0` | Vị trí bắt đầu phân trang |
+  | `order` | `string` | `asc` | `asc` (từ chương 1 trở đi) hoặc `desc` (chương mới nhất trước) |
+  | `lang` | `string` | *(tự động ưu tiên `vi,en`)* | Lọc theo ngôn ngữ dịch (`vi`, `en`, `vi,en`, hoặc `all` để lấy mọi ngôn ngữ) |
+
+- **Ví dụ:** `GET http://localhost:5000/api/manga/aa6c76f7-5f5f-46b6-a800-911145f81b9b/chapters?limit=50&order=asc`
+
+### 3.5. Lấy danh sách các trang ảnh của một chương để đọc (Chapter Pages)
+- **URL:** `GET /api/manga/chapter/:chapterId/pages`
+- **Dữ liệu trả về:** Thông tin chương (`chapter`), tổng số trang (`totalPages`), mảng ảnh chất lượng cao (`pages`) và mảng ảnh tiết kiệm dung lượng (`pagesDataSaver`). Mỗi phần tử chứa sẵn `imageUrl` đã đi qua Proxy của Backend để không bị chặn trên trình duyệt.
+
+

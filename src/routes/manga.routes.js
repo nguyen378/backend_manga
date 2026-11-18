@@ -17,4 +17,32 @@ router.get('/popular', mangaController.getPopularManga);
  */
 router.get('/cover/:mangaId/:fileName', mangaController.getCoverImage);
 
+/**
+ * @route   GET /api/manga/page
+ * @desc    Proxy tải ảnh trang truyện (MangaDex@Home) tránh lỗi chặn Hotlink/CORS
+ * @access  Public
+ */
+router.get('/page', mangaController.getPageImage);
+
+/**
+ * @route   GET /api/manga/chapter/:chapterId/pages
+ * @desc    Lấy danh sách các trang ảnh của một chương truyện để đọc
+ * @access  Public
+ */
+router.get('/chapter/:chapterId/pages', mangaController.getChapterPages);
+
+/**
+ * @route   GET /api/manga/:id/chapters
+ * @desc    Lấy danh sách các chương (Chapters) của một bộ truyện theo ID truyện
+ * @access  Public
+ */
+router.get('/:id/chapters', mangaController.getMangaChapters);
+
+/**
+ * @route   GET /api/manga/:id
+ * @desc    Lấy thông tin chi tiết của một bộ truyện theo ID (kèm điểm đánh giá & lượt theo dõi)
+ * @access  Public
+ */
+router.get('/:id', mangaController.getMangaById);
+
 module.exports = router;
